@@ -1,7 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Color _notificationBgColor = Colors.transparent;
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +51,8 @@ class HomePage extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.fromLTRB(2, 0, 0, 0),
           alignment: Alignment.center,
-          child: Image.asset(
-            'assets/icons/appLogoNoBg.png',
+          child: SvgPicture.asset(
+            'assets/icons/appLogoNoBg.svg',
             height: 70,
             width: 70,
           ),
@@ -51,19 +60,32 @@ class HomePage extends StatelessWidget {
       ),
       actions: [
         GestureDetector(
-          onTap: () {},
-          child: Container(
+          onTap: () {
+            if (_notificationBgColor != Colors.transparent) return;
+
+            setState(() {
+              _notificationBgColor = const Color(0xffF7F8F8);
+            });
+
+            Timer(const Duration(milliseconds: 100), () {
+              setState(() {
+                _notificationBgColor = Colors.transparent;
+              });
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             margin: const EdgeInsets.all(10),
             alignment: Alignment.center,
-            width: 36,
+            width: 40,
             decoration: BoxDecoration(
-              color: const Color(0xffF7F8F8),
+              color: _notificationBgColor,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Image.asset(
-              'assets/icons/notification.png',
-              height: 30,
-              width: 30,
+            child: SvgPicture.asset(
+              'assets/icons/notification.svg',
+              height: 24,
+              width: 24,
             ),
           ),
         ),
