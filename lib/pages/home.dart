@@ -2,6 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+// Ganti path import ini sesuai dengan struktur folder proyek Anda
+import 'package:laporkades_app/pages/front.dart';
+import 'package:laporkades_app/pages/history.dart';
+import 'package:laporkades_app/pages/profile.dart';
+import 'package:laporkades_app/pages/notifikasi.dart';
+
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -9,13 +16,29 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
   Color _notificationBgColor = Colors.transparent;
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const HalamanBeranda(),
+    const HalamanRiwayat(),
+    const HalamanProfil(),
+  ];
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: appBar(),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: bottomNavigationBar(),
     );
   }
 
@@ -49,7 +72,7 @@ class _HomePageState extends State<HomePage> {
       leading: GestureDetector(
         onTap: () {},
         child: Container(
-          margin: const EdgeInsets.fromLTRB(2, 0, 0, 0),
+          margin: const EdgeInsets.fromLTRB(5, 0, 0, 0),
           alignment: Alignment.center,
           child: SvgPicture.asset(
             'assets/icons/appLogoNoBg.svg',
@@ -61,6 +84,11 @@ class _HomePageState extends State<HomePage> {
       actions: [
         GestureDetector(
           onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HalamanNotifikasi()),
+            );
+
             if (_notificationBgColor != Colors.transparent) return;
 
             setState(() {
@@ -82,14 +110,41 @@ class _HomePageState extends State<HomePage> {
               color: _notificationBgColor,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: SvgPicture.asset(
-              'assets/icons/notification.svg',
-              height: 24,
-              width: 24,
+            child: const Icon(
+              Icons.notifications_none,
+              size: 30,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  BottomNavigationBar bottomNavigationBar() {
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'Riwayat',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profil',
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      onTap: (int index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      selectedItemColor: const Color(0xFF005465),
+      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
     );
   }
 }

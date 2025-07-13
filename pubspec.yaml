@@ -77,7 +77,11 @@ flutter:
   fonts:
     - family: Bulgatti
       fonts:
-        - asset: fonts/Bulgatti.ttf
+        - asset: assets/fonts/Bulgatti.ttf
+          weight: 400
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Medium.ttf
           weight: 400
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
