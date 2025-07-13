@@ -268,7 +268,7 @@ class HalamanBeranda extends StatelessWidget {
                             child: const Align(
                               alignment: Alignment.centerLeft, // <-- 1. Bungkus Text dengan Align
                               child: Text(
-                                'Cari laporan',
+                                'Cari Aduan',
                                 // textAlign dihapus karena sudah diatur oleh Align
                                 style: TextStyle(
                                   fontSize: 16,
