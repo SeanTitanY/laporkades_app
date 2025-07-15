@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
         text: const TextSpan(
           style: TextStyle(
             fontFamily: 'Bulgatti',
-            fontSize: 18,
+            fontSize: 15,
           ),
           children: <TextSpan>[
             TextSpan(

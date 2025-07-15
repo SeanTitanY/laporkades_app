@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laporkades_app/pages/laporan.dart';
 
 // Pastikan Anda juga memiliki class MyCustomClipper di proyek Anda
 class MyCustomClipper extends CustomClipper<Path> {
@@ -106,7 +107,7 @@ class HalamanBeranda extends StatelessWidget {
                       const Text(
                         'Mengalami Masalah di Tegal Rejo?',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 13,
                           color: Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
@@ -114,7 +115,7 @@ class HalamanBeranda extends StatelessWidget {
                       const Text(
                         'Buat Aduan Warga, Yuk!',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           color: Color.fromARGB(255, 0, 0, 0),
                           fontWeight: FontWeight.bold,
                         ),
@@ -127,7 +128,11 @@ class HalamanBeranda extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            print('Tombol Buat Laporan ditekan!');
+                            // Navigasi ke halaman kamera dan geolokasi
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CameraLocationScreen()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color.fromARGB(255, 14, 4, 190),
