@@ -29,6 +29,10 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
+	<key>NSCameraUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses ke kamera untuk mengambil foto.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses ke galeri untuk memilih foto.</string>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>

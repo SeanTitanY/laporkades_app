@@ -131,7 +131,7 @@ class HalamanBeranda extends StatelessWidget {
                             // Navigasi ke halaman kamera dan geolokasi
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const CameraLocationScreen()),
+                              MaterialPageRoute(builder: (context) => const ReportCameraScreen()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
