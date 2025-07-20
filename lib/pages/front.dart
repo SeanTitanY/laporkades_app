@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laporkades_app/pages/laporan.dart';
+import 'package:laporkades_app/pages/laporan1_foto.dart';
 
 // Pastikan Anda juga memiliki class MyCustomClipper di proyek Anda
 class MyCustomClipper extends CustomClipper<Path> {

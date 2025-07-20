@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Pastikan ini ada
 import 'package:image_picker/image_picker.dart';
-import 'package:laporkades_app/pages/preview.dart';
+import 'package:laporkades_app/pages/laporan1_5_preview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as img;
 
@@ -71,24 +71,19 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
     }
   }
 
-  /// FUNGSI BARU: Otomatis memotong bagian tengah gambar menjadi 1x1.
   Future<void> _autoCropAndShowPreview(String filePath) async {
-    // 1. Baca dan decode gambar dari file path
     final imageBytes = await File(filePath).readAsBytes();
     final originalImage = img.decodeImage(imageBytes);
 
     if (originalImage == null) return;
 
-    // 2. Tentukan ukuran potongan persegi (ambil sisi terpendek)
     final cropSize = originalImage.width < originalImage.height
         ? originalImage.width
         : originalImage.height;
     
-    // 3. Hitung titik awal (x, y) untuk cropping dari tengah
     final offsetX = (originalImage.width - cropSize) ~/ 2;
     final offsetY = (originalImage.height - cropSize) ~/ 2;
 
-    // 4. Potong gambar di memori
     final croppedImage = img.copyCrop(
       originalImage,
       x: offsetX,
@@ -97,12 +92,10 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
       height: cropSize,
     );
 
-    // 5. Simpan gambar yang sudah dipotong ke file sementara
     final tempDir = await getTemporaryDirectory();
     final newFilePath = '${tempDir.path}/cropped_${DateTime.now().millisecondsSinceEpoch}.jpg';
     await File(newFilePath).writeAsBytes(img.encodeJpg(croppedImage));
 
-    // 6. Navigasi ke halaman preview dengan gambar baru
     if (mounted) {
       Navigator.push(
         context,
@@ -118,35 +111,28 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          "Ambil foto laporan",
-          style: TextStyle(fontSize: 16, color: Colors.white)
-          ),
+        title: const Text("Ambil foto laporan", style: TextStyle(fontSize: 16, color: Colors.white)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           Container(
             padding: const EdgeInsets.only(right: 16.0),
             alignment: Alignment.center,
-            child: const Text(
-              "Langkah 1/5",
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
+            child: const Text("Langkah 1/4", style: TextStyle(fontSize: 12, color: Colors.white)),
           )
         ],
-        backgroundColor: Colors.black.withValues(alpha:0.8),
+        backgroundColor: Colors.black.withOpacity(0.8),
         elevation: 0,
         bottom: PreferredSize(
-    // Atur tinggi tambahan yang Anda inginkan di sini
-    preferredSize: const Size.fromHeight(90.0), 
-    child: Container(), // Widget kosong untuk menciptakan ruang
-  ),
+          preferredSize: const Size.fromHeight(90.0), 
+          child: Container(),
+        ),
       ),
       body: _isCameraInitialized
           ? Stack(
-              fit: StackFit.expand,
+              fit: StackFit.expand, // `StackFit` digunakan di sini
               children: [
                 CameraPreview(_cameraController!),
                 Align(
@@ -162,66 +148,58 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
   }
 
   Widget _buildControlBar() {
-  return Container(
-    color: Colors.black.withOpacity(0.8),
-    // Padding vertical diubah agar tidak ada padding atas ganda
-    padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 54.0),
-    child: Column(
-      // Penting: agar Column tidak mengisi semua ruang vertikal
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // --- TAMBAHAN DI SINI ---
-        // SizedBox untuk memberi ruang tambahan di atas tombol
-        const SizedBox(height: 60), // Atur tinggi tambahan di sini
-
-        // Row yang berisi semua tombol tetap sama
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.photo_library_outlined, size: 32),
-              color: Colors.white,
-              onPressed: () async {
-                final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-                if (image != null) {
-                  // Panggil fungsi auto-crop
-                  await _autoCropAndShowPreview(image.path);
-                }
-              },
-            ),
-            GestureDetector(
-              onTap: () async {
-                if (!_cameraController!.value.isInitialized ||
-                    _cameraController!.value.isTakingPicture) {
-                  return;
-                }
-                try {
-                  final picture = await _cameraController!.takePicture();
-                  // Panggil fungsi auto-crop
-                  await _autoCropAndShowPreview(picture.path);
-                } on CameraException catch (e) {
-                  debugPrint("Error taking picture: $e");
-                }
-              },
-              child: Container(
-                height: 80,
-                width: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue,
-                  border: Border.all(color: Colors.white, width: 4),
+    return Container(
+      color: Colors.black.withOpacity(0.8),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 54.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 60),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.photo_library_outlined, size: 32),
+                color: Colors.white,
+                onPressed: () async {
+                  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                  if (image != null) {
+                    await _autoCropAndShowPreview(image.path);
+                  }
+                },
+              ),
+              GestureDetector(
+                onTap: () async {
+                  if (!_cameraController!.value.isInitialized ||
+                      _cameraController!.value.isTakingPicture) {
+                    return;
+                  }
+                  try {
+                    final picture = await _cameraController!.takePicture();
+                    await _autoCropAndShowPreview(picture.path);
+                  } on CameraException catch (e) {
+                    debugPrint("Error taking picture: $e");
+                  }
+                },
+                child: Container(
+                  height: 80,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.blue,
+                    border: Border.all(color: Colors.white, width: 4),
+                  ),
                 ),
               ),
-            ),
-            IconButton(
-              icon: Icon(_getFlashIcon(), size: 32),
-              color: Colors.white,
-              onPressed: _toggleFlash,
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+              IconButton(
+                icon: Icon(_getFlashIcon(), size: 32),
+                color: Colors.white,
+                onPressed: _toggleFlash,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:laporkades_app/pages/laporan2_lokasi.dart';
 
 class PreviewScreen extends StatelessWidget {
   final String imagePath;
@@ -96,12 +97,16 @@ class PreviewScreen extends StatelessWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Logika saat foto diterima
-                print("Foto digunakan: $imagePath");
-
-                // Kembali ke halaman form sebelumnya sambil mengirim path gambar
-                Navigator.of(context).pop(imagePath); // Ini akan menutup preview
-                Navigator.of(context).pop(); // Ini akan menutup kamera
+                // Gunakan pushReplacement untuk mengganti halaman saat ini (PreviewScreen)
+                // dengan halaman baru (SetLocationScreen) dalam tumpukan navigasi.
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    // 1. Kirim 'imagePath' yang diterima oleh PreviewScreen
+                    //    ke halaman SetLocationScreen.
+                    builder: (context) => SetLocationScreen(imagePath: imagePath),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

@@ -33,6 +33,10 @@
 	<string>Aplikasi ini memerlukan akses ke kamera untuk mengambil foto.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses ke galeri untuk memilih foto.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses lokasi untuk menentukan lokasi laporan Anda.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses lokasi untuk menentukan lokasi laporan Anda.</string>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
