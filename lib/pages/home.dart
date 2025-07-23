@@ -7,6 +7,8 @@ import 'package:laporkades_app/pages/front.dart';
 import 'package:laporkades_app/pages/history.dart';
 import 'package:laporkades_app/pages/profile.dart';
 import 'package:laporkades_app/pages/notifikasi.dart';
+import 'package:laporkades_app/pages/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -22,7 +24,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
 
   final List<Widget> _pages = [
     const HalamanBeranda(),
-    const HalamanRiwayat(),
+    const HistoryScreen(),
     const HalamanProfil(),
   ];
 
@@ -84,36 +86,29 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
       actions: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const HalamanNotifikasi()),
-            );
+            // 1. Dapatkan status login pengguna
+            final user = FirebaseAuth.instance.currentUser;
 
-            if (_notificationBgColor != Colors.transparent) return;
-
-            setState(() {
-              _notificationBgColor = const Color(0xffF7F8F8);
-            });
-
-            Timer(const Duration(milliseconds: 100), () {
-              setState(() {
-                _notificationBgColor = Colors.transparent;
-              });
-            });
+            // 2. Cek apakah pengguna sudah login atau belum
+            if (user == null) {
+              // Jika BELUM login, arahkan ke halaman login
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            } else {
+              // Jika SUDAH login, arahkan ke halaman notifikasi
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HalamanNotifikasi()),
+              );
+            }
           },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+          child: Container(
             margin: const EdgeInsets.all(10),
             alignment: Alignment.center,
             width: 40,
-            decoration: BoxDecoration(
-              color: _notificationBgColor,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.notifications_none,
-              size: 30,
-            ),
+            child: const Icon(Icons.notifications_none, size: 30),
           ),
         ),
       ],
@@ -138,12 +133,27 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
       ],
       currentIndex: _selectedIndex,
       onTap: (int index) {
+      // 1. Dapatkan status login pengguna saat ini
+      final user = FirebaseAuth.instance.currentUser;
+
+      // 2. Cek apakah pengguna mencoba mengakses halaman yang butuh login
+      if (index > 0 && user == null) {
+        // Jika BELUM login dan klik Riwayat (index 1) atau Profil (index 2),
+        // arahkan ke halaman login.
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } else {
+        // Jika SUDAH login atau jika pengguna klik Home (index 0),
+        // ganti halaman seperti biasa.
         setState(() {
           _selectedIndex = index;
         });
-      },
-      selectedItemColor: const Color(0xFF005465),
-      unselectedItemColor: Colors.grey,
+      }
+    },
+    selectedItemColor: const Color(0xFF005465),
+    unselectedItemColor: Colors.grey,
       type: BottomNavigationBarType.fixed,
     );
   }

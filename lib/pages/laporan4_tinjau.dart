@@ -2,6 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../report_model.dart'; // Sesuaikan path ke model Anda
+import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+const String cloudinaryCloudName = "dq6s6f6dw";
+const String cloudinaryUploadPreset = "laporkades";
 
 // Enum untuk merepresentasikan pilihan jenis laporan
 enum ReportType { privat, publik }
@@ -17,6 +23,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
   // State lokal untuk checkbox dan jenis laporan
   bool _isAgreed = false;
   ReportType _selectedReportType = ReportType.privat; // Defaultnya privat
+  bool _isSubmitting = false; // State untuk loading saat submit
 
   /// Fungsi untuk menampilkan modal pilihan jenis laporan dari bawah
   void _showReportTypeModal() {
@@ -283,25 +290,65 @@ class _SummaryScreenState extends State<SummaryScreen> {
     );
   }
 
+  Future<void> _submitReport(ReportDataModel reportData) async {
+    if (reportData.imagePath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gambar tidak boleh kosong.")));
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // 1. Unggah Gambar ke Cloudinary
+      final cloudinary = CloudinaryPublic(cloudinaryCloudName, cloudinaryUploadPreset, cache: false);
+      CloudinaryResponse response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(reportData.imagePath!, resourceType: CloudinaryResourceType.Image),
+      );
+      String imageUrl = response.secureUrl;
+
+      // 2. Simpan Semua Data ke Firestore
+      final firestore = FirebaseFirestore.instance;
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) throw Exception("Pengguna tidak login.");
+
+      await firestore.collection('laporan').add({
+        'userId': user.uid,
+        'imageUrl': imageUrl,
+        'alamat': reportData.reportAddress,
+        'detailAlamat': reportData.detailAddress,
+        'deskripsi': reportData.reportDescription,
+        'status': 'Menunggu',
+        'tanggalDibuat': Timestamp.now(),
+      });
+      
+      // 3. Proses Berhasil
+      reportData.clear();
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Laporan berhasil dikirim!")));
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+
+    } catch (e) {
+      // 4. Proses Gagal
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal mengirim laporan: $e")));
+      }
+    } finally {
+      if(mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
   Widget _buildSubmitButton(ReportDataModel reportData) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _isAgreed
-              ? () {
-                  // TODO: Logika untuk mengirim semua data ke backend
-                  print("--- MENGIRIM LAPORAN ---");
-                  print("Report Type: ${_selectedReportType.name}");
-                  print("Image Path: ${reportData.imagePath}");
-                  print("Address: ${reportData.reportAddress}");
-                  print("Description: ${reportData.reportDescription}");
-                  print("-------------------------");
-                  
-                  reportData.clear();
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
+          onPressed: _isAgreed && !_isSubmitting
+              ? () => _submitReport(reportData) // Panggil fungsi submit di sini
               : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: _isAgreed ? Colors.blueAccent : Colors.grey,
@@ -309,7 +356,9 @@ class _SummaryScreenState extends State<SummaryScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('Kirim', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          child: _isSubmitting
+              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+              : const Text('Kirim', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ),
       ),
     );
