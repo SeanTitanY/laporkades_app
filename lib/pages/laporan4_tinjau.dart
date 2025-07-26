@@ -6,6 +6,10 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:laporkades_app/pages/laporan2_lokasi.dart';
+import 'package:laporkades_app/pages/home.dart';
+import 'package:laporkades_app/pages/laporan3_detail.dart';
+
 const String cloudinaryCloudName = "dq6s6f6dw";
 const String cloudinaryUploadPreset = "laporkades";
 
@@ -131,7 +135,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                       Expanded(child: Text(point, style: const TextStyle(color: Colors.black54))),
                     ],
                   ),
-                )).toList(),
+                )),
               ],
             ),
           ),
@@ -181,12 +185,43 @@ class _SummaryScreenState extends State<SummaryScreen> {
                       Text(reportData.detailAddress?.isNotEmpty == true ? reportData.detailAddress! : '-', style: const TextStyle(fontSize: 16)),
                     ],
                   ),
-                  onChangePressed: () { /* TODO: Navigasi ke halaman lokasi */ },
+                  onChangePressed: () {
+                    // 1. Dapatkan imagePath dari provider
+                    final String? imagePath = reportData.imagePath;
+
+                    // 2. Cek apakah imagePath tidak null
+                    if (imagePath != null) {
+                      // Jika ada, lanjutkan navigasi
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          // Hapus 'const' karena imagePath adalah variabel
+                          builder: (context) => SetLocationScreen(imagePath: imagePath),
+                        ),
+                      );
+                    } else {
+                      // 3. Jika null, tampilkan pesan error
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Gambar tidak ditemukan untuk diedit.')),
+                      );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    }
+                  },
                 ),
                 _buildInfoCard(
                   title: "Deskripsi",
                   content: Text(reportData.reportDescription ?? 'Deskripsi kosong', style: const TextStyle(fontSize: 16)),
-                  onChangePressed: () { /* TODO: Navigasi ke halaman detail */ },
+                  onChangePressed: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(
+                          // Hapus 'const' karena imagePath adalah variabel
+                          builder: (context) => ReportDetailScreen(),
+                        ),
+                      );
+                  },
                 ),
                 _buildDeclarationCard(),
                 _buildSubmitButton(reportData),
@@ -306,6 +341,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
       );
       String imageUrl = response.secureUrl;
 
+      final String description = reportData.reportDescription ?? "";
+
       // 2. Simpan Semua Data ke Firestore
       final firestore = FirebaseFirestore.instance;
       final user = FirebaseAuth.instance.currentUser;
@@ -317,9 +354,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
         'imageUrl': imageUrl,
         'alamat': reportData.reportAddress,
         'detailAlamat': reportData.detailAddress,
-        'deskripsi': reportData.reportDescription,
+        'deskripsi': description,
+        'deskripsiLowerCase': description.toLowerCase(),
         'status': 'Menunggu',
         'tanggalDibuat': Timestamp.now(),
+        'jenisLaporan': _selectedReportType.name,
       });
       
       // 3. Proses Berhasil

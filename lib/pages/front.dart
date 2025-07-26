@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laporkades_app/pages/laporan1_foto.dart';
+import 'package:laporkades_app/pages/cari_laporan.dart';
 
 // Pastikan Anda juga memiliki class MyCustomClipper di proyek Anda
 class MyCustomClipper extends CustomClipper<Path> {
@@ -188,25 +189,28 @@ class HalamanBeranda extends StatelessWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              print('Tombol Cari Laporan ditekan!');
+                              // Navigasi ke halaman cari laporan
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const PublicReportsScreen()), // Ganti dengan nama halaman pencarian Anda
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                               foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                               padding: const EdgeInsets.symmetric(
                                 vertical: 15,
-                                horizontal: 16, // Menambahkan sedikit padding horizontal
+                                horizontal: 16,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              elevation: 4, // Menambahkan sedikit shadow
+                              elevation: 4,
                             ),
                             child: const Align(
-                              alignment: Alignment.centerLeft, // <-- 1. Bungkus Text dengan Align
+                              alignment: Alignment.centerLeft,
                               child: Text(
-                                'Lihat aduan warga lainnya',
-                                // textAlign dihapus karena sudah diatur oleh Align
+                                'Lihat dan cari aduan warga',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -215,74 +219,7 @@ class HalamanBeranda extends StatelessWidget {
                             ),
                           ),
                         ),
-
                         const SizedBox(height:20),
-                        
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              print('Tombol Cari Laporan ditekan!');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                              foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 15,
-                                horizontal: 16, // Menambahkan sedikit padding horizontal
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 4, // Menambahkan sedikit shadow
-                            ),
-                            child: const Align(
-                              alignment: Alignment.centerLeft, // <-- 1. Bungkus Text dengan Align
-                              child: Text(
-                                'Pantau laporan yang kamu buat',
-                                // textAlign dihapus karena sudah diatur oleh Align
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height:20),
-
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              print('Tombol Cari Laporan ditekan!');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                              foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 15,
-                                horizontal: 16, // Menambahkan sedikit padding horizontal
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 4, // Menambahkan sedikit shadow
-                            ),
-                            child: const Align(
-                              alignment: Alignment.centerLeft, // <-- 1. Bungkus Text dengan Align
-                              child: Text(
-                                'Cari Aduan',
-                                // textAlign dihapus karena sudah diatur oleh Align
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
                       ],
                     ),
                   ],

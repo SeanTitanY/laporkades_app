@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laporkades_app/pages/home.dart'; // Ganti dengan halaman utama Anda
-// import 'package:laporkades_app/pages/register_screen.dart'; // Ganti dengan halaman registrasi Anda
+import 'package:laporkades_app/pages/register.dart'; // Ganti dengan halaman registrasi Anda
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,41 +62,62 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  setState(() => _isLoading = true);
+  
+  try {
+    // 1. Lakukan proses login dengan Google
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) throw Exception('Login dibatalkan');
 
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-      
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final OAuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // 2. Login ke Firebase Authentication
+    final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+    final User? user = userCredential.user;
+
+    if (user == null) throw Exception('Gagal mendapatkan data pengguna dari Firebase.');
+
+    // --- LOGIKA SIMPAN KE FIRESTORE ---
+
+    // 3. Dapatkan referensi ke dokumen pengguna di Firestore
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final DocumentReference userDocRef = firestore.collection('users').doc(user.uid);
+
+    final doc = await userDocRef.get();
+
+    // 4. Jika dokumen tidak ada (pengguna baru), buat profilnya
+    if (!doc.exists) {
+      await userDocRef.set({
+        'username': user.displayName, // Ambil nama dari akun Google
+        'email': user.email,
+        'photoUrl': user.photoURL, // Ambil URL foto dari akun Google
+        'createdAt': Timestamp.now(),
+      });
+    }
+    
+    // 5. Navigasi ke halaman utama setelah login berhasil
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomePage()),
       );
-      
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal masuk dengan Google: $e")),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    }
+
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal masuk: ${e.toString()}")),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
+}
   
   @override
   void dispose() {
@@ -220,9 +241,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text("Belum punya akun?"),
                   TextButton(
                     onPressed: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                      // );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                      );
                     },
                     child: const Text("Daftar di sini."),
                   ),
