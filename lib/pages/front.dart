@@ -94,7 +94,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setBool('hasSeenPreReportInfo', true);
                         }
-                        if (mounted) {
+                        if (context.mounted) {
                            Navigator.pop(context);
                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportCameraScreen()));
                         }
@@ -173,7 +173,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text('Selamat datang di LaporKades.', style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.9))),
+                      Text('Selamat datang di LaporKades.', style: TextStyle(fontSize: 16, color: Colors.white.withValues(alpha: .9))),
                     ],
                   ),
                 ),
@@ -190,7 +190,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
+                        color: Colors.grey.withValues(alpha: .2),
                         spreadRadius: 2,
                         blurRadius: 5,
                         offset: const Offset(0, 3),
@@ -219,7 +219,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                               final prefs = await SharedPreferences.getInstance();
                               final bool hasSeenInfo = prefs.getBool('hasSeenPreReportInfo') ?? false;
 
-                              if (!mounted) return;
+                              if (!context.mounted) return;
 
                               if (hasSeenInfo) {
                                 Navigator.push(context,

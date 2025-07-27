@@ -74,8 +74,13 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
       return;
     }
 
+    final LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
     try {
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
@@ -154,7 +159,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
             icon: const Icon(Icons.edit, size: 16),
             label: const Text("Ganti Foto"),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.9),
+              backgroundColor: Colors.white.withValues(alpha: .9),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
