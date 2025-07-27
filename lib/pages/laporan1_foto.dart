@@ -123,7 +123,7 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
             child: const Text("Langkah 1/4", style: TextStyle(fontSize: 12, color: Colors.white)),
           )
         ],
-        backgroundColor: Colors.black.withOpacity(0.8),
+        backgroundColor: Colors.black.withValues(alpha: .8),
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(90.0), 
@@ -149,7 +149,7 @@ class _ReportCameraScreenState extends State<ReportCameraScreen> {
 
   Widget _buildControlBar() {
     return Container(
-      color: Colors.black.withOpacity(0.8),
+      color: Colors.black.withValues(alpha: .8),
       padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 54.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
