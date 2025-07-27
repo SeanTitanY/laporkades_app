@@ -2,84 +2,80 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:laporkades_app/pages/login.dart'; // Sesuaikan path ke halaman login
+import 'package:laporkades_app/pages/kebijakan_privasi.dart';
+import 'package:laporkades_app/pages/syarat_dan_ketentuan.dart';
+import 'package:laporkades_app/pages/tentang.dart';
 
 class HalamanProfil extends StatelessWidget {
   const HalamanProfil({super.key});
 
   // Fungsi untuk melakukan log out
   Future<void> _signOut(BuildContext context) async {
-    try {
-      await GoogleSignIn().signOut();
-      await FirebaseAuth.instance.signOut();
-      
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (Route<dynamic> route) => false,
-        );
-      }
-    } catch (e) {
-      print("Error saat log out: $e");
+  try {
+    // Proses sign out
+    await GoogleSignIn().signOut();
+    await FirebaseAuth.instance.signOut();
+    
+    // Navigasi jika berhasil
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (Route<dynamic> route) => false,
+      );
+    }
+  } catch (e) {
+    // Jika terjadi error, tampilkan SnackBar
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Gagal untuk keluar: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data pengguna yang sedang login
-    final User? user = FirebaseAuth.instance.currentUser;
-    // Gunakan nama dari profil, atau 'Warga' jika tidak ada
-    final String username = user?.displayName ?? 'Warga';
-
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text("Profil", style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 1,
-      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // --- Bagian Header ---
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Hai,",
-                  style: TextStyle(fontSize: 22, color: Colors.black54),
-                ),
-                Text(
-                  username,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // --- Opsi Menu ---
+          // Di dalam HalamanProfil
+          // Di dalam HalamanProfil
           _buildOptionListTile(
             icon: Icons.info_outline,
             title: 'Tentang Aplikasi LaporKades',
-            onTap: () { /* TODO: Navigasi ke halaman Tentang */ },
+            onTap: () {
+              // Navigasi ke halaman Tentang Aplikasi
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TentangScreen()),
+              );
+            },
           ),
+          // Di dalam HalamanProfil
           _buildOptionListTile(
             icon: Icons.description_outlined,
             title: 'Syarat dan Ketentuan',
-            onTap: () { /* TODO: Navigasi ke halaman Syarat & Ketentuan */ },
+            onTap: () {
+              // Navigasi ke halaman Syarat & Ketentuan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TermsAndConditionsScreen()),
+              );
+            },
           ),
           _buildOptionListTile(
             icon: Icons.shield_outlined,
             title: 'Kebijakan Privasi',
-            onTap: () { /* TODO: Navigasi ke halaman Kebijakan Privasi */ },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+              );
+            },
           ),
           
           const Divider(height: 32),

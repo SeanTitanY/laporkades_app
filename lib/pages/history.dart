@@ -93,8 +93,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _fetchReports() async {
-    print("Memulai fetch reports...");
-
     if (_isLoadingMore || !_hasMore) return;
 
     setState(() {
@@ -104,7 +102,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     try {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) {
-    print("User tidak login.");
     setState(() {
       _hasMore = false;
       _isLoading = false;
@@ -126,7 +123,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   try {
     querySnapshot = await query.limit(_limit).get();
   } catch (queryError) {
-    print("Query error: $queryError");
     setState(() {
       _isLoading = false;
       _isLoadingMore = false;
@@ -134,10 +130,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
     return;
   }
-
-  print("Total documents fetched: ${querySnapshot.docs.length}");
-
-
       if (querySnapshot.docs.isNotEmpty) {
         _lastDocument = querySnapshot.docs.last;
         List<ReportHistory> newReports = querySnapshot.docs
@@ -153,8 +145,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       } else {
         if (mounted) setState(() => _hasMore = false);
       }
-    } catch (e) {
-      print("Error fetching reports: $e");
     } finally {
       if (mounted) {
         setState(() {

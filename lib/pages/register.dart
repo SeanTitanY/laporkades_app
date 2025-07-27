@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laporkades_app/pages/home.dart'; // Ganti dengan halaman utama Anda
+import 'package:laporkades_app/pages/verify_email.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -45,25 +45,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final User? user = userCredential.user;
       if (user != null) {
         // 2. Perbarui profil di Firebase Authentication (nama & foto)
-        await user.updateProfile(displayName: _nameController.text.trim());
-        await user.reload();
+        await user.sendEmailVerification();
 
-        // 3. Simpan data profil lengkap ke Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'username': _nameController.text.trim(),
-          'email': user.email,
-          'createdAt': Timestamp.now(),
-          'photoUrl': null, // Awalnya null, bisa diupdate nanti
-        });
-      }
+      // 2. Perbarui profil dan simpan ke Firestore (tetap sama)
+      await user.updateProfile(displayName: _nameController.text.trim());
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'username': _nameController.text.trim(),
+        'email': user.email,
+        'createdAt': Timestamp.now(),
+        'photoUrl': null,
+      });
 
-      // 4. Jika berhasil, navigasi ke halaman utama
+      // 3. Arahkan ke halaman verifikasi, bukan HomePage
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => const VerifyEmailScreen()),
         );
       }
-    } on FirebaseAuthException catch (e) {
+    }
+  } on FirebaseAuthException catch (e) {
       String message = "Terjadi kesalahan.";
       if (e.code == 'weak-password') {
         message = 'Password terlalu lemah.';

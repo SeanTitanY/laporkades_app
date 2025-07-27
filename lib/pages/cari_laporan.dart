@@ -142,8 +142,6 @@ class _PublicReportsScreenState extends State<PublicReportsScreen> {
       } else {
         if (mounted) setState(() => _hasMore = false);
       }
-    } catch (e) {
-      print("Error fetching reports: $e");
     } finally {
       if (mounted) {
         setState(() {

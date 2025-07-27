@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laporkades_app/pages/home.dart'; // Ganti dengan halaman utama Anda
 import 'package:laporkades_app/pages/register.dart'; // Ganti dengan halaman registrasi Anda
+import 'package:laporkades_app/pages/izin.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,40 +19,49 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  /// Fungsi untuk menangani login dengan Email & Password
-  Future<void> _signInWithEmailAndPassword() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+  Future<void> _handleSuccessfulLogin(User user) async {
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+    // Cek apakah field 'hasAgreedToPermissions' ada dan bernilai true
+    if (userDoc.exists && userDoc.data()?['hasAgreedToPermissions'] == true) {
+      // Jika sudah pernah setuju, langsung ke HomePage
+      if (mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+      }
+    } else {
+      // Jika pengguna baru atau belum pernah setuju, ke PermissionScreen
+      if (mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const PermissionScreen()));
+      }
+    }
+  }
+
+  /// Fungsi untuk mengirim email reset password
+  Future<void> _resetPassword(String email) async {
+    // Tutup dialog terlebih dahulu
+    Navigator.of(context).pop();
+
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Email dan password tidak boleh kosong.")),
+        const SnackBar(content: Text("Masukkan alamat email Anda untuk reset password.")),
       );
       return;
     }
 
     setState(() => _isLoading = true);
-
+    
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      // Jika berhasil, navigasi ke halaman utama
-      if (mounted) {
-        // Navigator.of(context).pushReplacement(
-        //   MaterialPageRoute(builder: (context) => const HomeScreen()),
-        // );
-      }
-    } on FirebaseAuthException catch (e) {
-      String message = "Terjadi kesalahan.";
-      if (e.code == 'invalid-credential') {
-        message = "Email atau password salah.";
-      } else if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-        message = "Email atau password salah.";
-      }
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
+          const SnackBar(content: Text("Link reset password telah dikirim ke email Anda.")),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal mengirim email: ${e.message}")),
         );
       }
     } finally {
@@ -61,63 +71,83 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithGoogle() async {
-  setState(() => _isLoading = true);
-  
-  try {
-    // 1. Lakukan proses login dengan Google
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) throw Exception('Login dibatalkan');
-
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // 2. Login ke Firebase Authentication
-    final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-    final User? user = userCredential.user;
-
-    if (user == null) throw Exception('Gagal mendapatkan data pengguna dari Firebase.');
-
-    // --- LOGIKA SIMPAN KE FIRESTORE ---
-
-    // 3. Dapatkan referensi ke dokumen pengguna di Firestore
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final DocumentReference userDocRef = firestore.collection('users').doc(user.uid);
-
-    final doc = await userDocRef.get();
-
-    // 4. Jika dokumen tidak ada (pengguna baru), buat profilnya
-    if (!doc.exists) {
-      await userDocRef.set({
-        'username': user.displayName, // Ambil nama dari akun Google
-        'email': user.email,
-        'photoUrl': user.photoURL, // Ambil URL foto dari akun Google
-        'createdAt': Timestamp.now(),
-      });
+  /// Fungsi untuk menangani login dengan Email & Password
+  Future<void> _signInWithEmailAndPassword() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Email dan password tidak boleh kosong.")));
+      return;
     }
-    
-    // 5. Navigasi ke halaman utama setelah login berhasil
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
+    setState(() => _isLoading = true);
+
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-    }
 
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal masuk: ${e.toString()}")),
-      );
-    }
-  } finally {
-    if (mounted) {
-      setState(() => _isLoading = false);
+      // Panggil handler setelah login berhasil
+      if (userCredential.user != null) {
+        await _handleSuccessfulLogin(userCredential.user!);
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = "Terjadi kesalahan.";
+      if (e.code == 'invalid-credential' || e.code == 'user-not-found' || e.code == 'wrong-password') {
+        message = "Email atau password salah.";
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
-}
+
+  /// Fungsi untuk menangani login dengan Google
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) throw Exception('Login dibatalkan');
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user == null) throw Exception('Gagal mendapatkan data pengguna dari Firebase.');
+
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+      if (!doc.exists) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'username': user.displayName,
+          'email': user.email,
+          'photoUrl': user.photoURL,
+          'createdAt': Timestamp.now(),
+          'hasAgreedToPermissions': false, // Pengguna baru belum setuju
+        });
+      }
+
+      // Panggil handler setelah login berhasil
+      await _handleSuccessfulLogin(user);
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal masuk: ${e.toString()}")));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
   
   @override
   void dispose() {
@@ -225,10 +255,40 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               
               // Link Lupa Password
+              // Link Lupa Password
               Align(
                 alignment: Alignment.center,
                 child: TextButton(
-                  onPressed: () { /* TODO: Logika Lupa Password */ },
+                  onPressed: () {
+                    // Tampilkan dialog saat tombol ditekan
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final TextEditingController resetEmailController = TextEditingController();
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          title: const Text("Reset Password"),
+                          content: TextField(
+                            controller: resetEmailController,
+                            decoration: const InputDecoration(hintText: "Masukkan email terdaftar"),
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          actions: [
+                            TextButton(
+                              child: const Text("Batal"),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                            ElevatedButton(
+                              child: const Text("Kirim"),
+                              onPressed: () {
+                                _resetPassword(resetEmailController.text);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                   child: const Text("Lupa Password?"),
                 ),
               ),
